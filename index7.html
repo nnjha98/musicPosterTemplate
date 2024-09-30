@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator with p5.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+    <script>
+        let qrCode;
+        let qrReady = false;
+
+        function setup() {
+            createCanvas(400, 400);
+            background(220);
+            
+            // Generate QR code asynchronously
+            generateQRCode("https://humanity.com")
+                .then(code => {
+                    qrCode = code;
+                    qrReady = true;
+                })
+                .catch(error => console.error("Error generating QR code:", error));
+        }
+
+        function draw() {
+            if (qrReady) {
+                // Draw QR code on canvas
+                image(qrCode, 0, 0,100,175);
+                // noLoop(); // Stop drawing once QR code is rendered
+            }
+        }
+
+        function generateQRCode(url) 
+        {
+            return new Promise((resolve, reject) => {
+                try {
+                    const qr = qrcode(0, 'L');
+                    qr.addData(url);
+                    qr.make();
+                    
+                    const cellSize = 5;
+                    const size = qr.getModuleCount() * cellSize;
+                    
+                    const qrImg = createImage(size, size);
+                    qrImg.loadPixels();
+                    
+                    for (let y = 0; y < size; y++) {
+                        for (let x = 0; x < size; x++) {
+                            const module = qr.isDark(Math.floor(y / cellSize), Math.floor(x / cellSize));
+                            const index = (y * size + x) * 4;
+                            qrImg.pixels[index] = module ? 0 : 200;
+                            qrImg.pixels[index + 1] = module ? 0 : 200;
+                            qrImg.pixels[index + 2] = module ? 255 : 200;
+                            qrImg.pixels[index + 3] = 255;
+                        }
+                    }
+                    
+                    qrImg.updatePixels();
+                    resolve(qrImg);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

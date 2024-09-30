@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A4 Canvas with Download Button</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    canvas {
+      background-color: lightgrey;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .text-box {
+      margin-top: 10px;
+      width: 2008px; /* Match the width of the image */
+      padding: 10px;
+      font-size: 18px;
+      line-height: 1.5;
+      text-align: center;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="canvasContainer"></div>
+  <button id="downloadButton">Download A4 Canvas as PNG</button>
+
+  <script>
+    let a4Width = 2480;  // A4 size in pixels at 300 DPI (width)
+    let a4Height = 3508; // A4 size in pixels at 300 DPI (height)
+    let margin = 236;    // 20mm margin in pixels (20mm * 300dpi / 25.4)
+    let squareX = margin;  // Starting x position (left margin)
+    let squareY = margin; 
+    let squareSize = a4Width - 2 * margin;  // Width of the square considering margins
+    let bandNameSize = 200;
+    let albumSongArray = ["Don't Panic","Shiver","Spies","Sparks","Yellow","Trouble","Parachutes","High Speed","We Never Change","Everything's Not Lost"];
+    let albumSongNameSize = 70
+
+    let albumName = `PARACHUTES`
+
+    let urlSpotify = `https://open.spotify.com/album/6ZG5lRT77aJ3btmArcykra`
+    let urlYT = `https://music.youtube.com/browse/MPREb_oBucXyijinj`
+    let urlGenius = `https://genius.com/albums/Coldplay/Parachutes`
+
+    let qrCodeSpotify,qrCodeYT,qrCodeGenius;
+    let qrReadySpotify = false;
+    let qrReadyYT = false;
+    let qrReadyGenius = false;
+    let qrSize = 200;
+    // let qrDrawn = false;
+    let img;  // Variable to hold the image
+    let svg = [];
+
+    // Preload the image before setup and draw are called
+    function preload() {
+      img = loadImage('cplay1.jpg');  // Load image from the same folder
+      svg[0] = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png');  // Load image from the same folder
+      svg[1] = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png');  // Load image from the same folder
+    //   svg[2] = loadImage('cplay1.jpg');  // Load image from the same folder
+      
+    }
+
+    function setup() {
+      // Create the canvas and attach it to the canvasContainer div
+      let canvas = createCanvas(a4Width, a4Height);
+      canvas.parent('canvasContainer');
+      // Generate QR code asynchronously
+      generateQRCode(urlSpotify,0,100,0)
+                .then(code => {
+                    qrCodeSpotify = code;
+                    qrReadySpotify = true;
+                })
+                .catch(error => console.error("Error generating QR code:", error));
+
+        generateQRCode(urlYT,255,0,0)
+                .then(code => {
+                    qrCodeYT = code;
+                    qrReadyYT = true;
+                })
+                .catch(error => console.error("Error generating QR code:", error));
+
+        generateQRCode(urlGenius,0,0,255)
+                .then(code => {
+                    qrCodeGenius = code;
+                    qrReadyGenius = true;
+                })
+                .catch(error => console.error("Error generating QR code:", error));
+    }
+
+    function draw() {
+      // Light grey background for the A4 canvas
+      background(211, 211, 211);  // light grey
+      drawSquare();
+      drawAlbumName();
+      drawAlbumSongNames();
+      drawQrCode()
+    }
+
+    function drawQrCode()
+    {
+        if (qrReadySpotify && qrReadyYT && qrReadyGenius) {
+                // Draw QR code on canvas
+                let xlimit = squareX + squareSize
+                let ylimit = a4Height - margin -2*margin
+                push()
+                translate(xlimit,ylimit)
+                image(qrCodeSpotify, -3.4*qrSize, -qrSize,qrSize,qrSize);
+                image(qrCodeYT, -2.2*qrSize, -qrSize,qrSize,qrSize);
+                image(qrCodeGenius, -qrSize, -qrSize,qrSize,qrSize);
+                image(svg[0], -3.4*qrSize+qrSize/4, 0+qrSize/4, qrSize/2, qrSize/2)
+                let scaleFactor = qrSize/(2.0*svg[1].width)
+                image(svg[1], -2.2*qrSize+svg[1].width*scaleFactor/2, 0+svg[1].height*scaleFactor/1.1,svg[1].width*scaleFactor,svg[1].height*scaleFactor)
+                textSize(50);  // Set text size
+                fill(0,0,255);  // Set text color (black)
+                textStyle(BOLD);  
+                text("LYRICS", -0.95*qrSize, qrSize*0.57);
+                pop()
+                // noLoop(); // Stop drawing once QR code is rendered
+            }
+    }
+
+    function drawSquare() {
+      fill('red');  // Set fill color to red
+      noStroke();   // No border for the square
+    //   let squareX = margin;  // Starting x position (left margin)
+    //   let squareY = margin;  // Starting y position (top margin)
+      
+      // Draw the red square (rectangle) at the top with calculated size
+    //   rect(squareX, squareY, squareSize, squareSize);
+        image(img, squareX, squareY, squareSize, squareSize);
+    }
+
+    function drawAlbumName()
+    {
+        // Add text below the image
+            let textY = squareY + squareSize + bandNameSize;  // Position text 30px below the image
+            textSize(bandNameSize);  // Set text size
+            fill(0);  // Set text color (black)
+            textStyle(BOLD);  
+            text(albumName, squareX, textY);  // Render text
+    }
+
+    function drawAlbumSongNames()
+    {
+        // Add text below the image
+            let textY = squareY + squareSize + bandNameSize + 2*albumSongNameSize;  // Position text 30px below the image
+            textSize(albumSongNameSize);  // Set text size
+            fill(90);  // Set text color (black)
+            textStyle(NORMAL)
+            for(let i=0;i<albumSongArray.length;i++)
+            {
+                text(`${i+1}.${(i+1)<10?'  ':''} ${albumSongArray[i].toUpperCase()}`, squareX, textY+1.1*i*albumSongNameSize);  // Render text
+
+            }
+    }
+
+    function generateQRCode(url,dr=0,dg=0,db=0) 
+        {
+            return new Promise((resolve, reject) => {
+                try {
+                    const qr = qrcode(0, 'L');
+                    qr.addData(url);
+                    qr.make();
+                    
+                    const cellSize = 5;
+                    const size = qr.getModuleCount() * cellSize;
+                    
+                    const qrImg = createImage(size, size);
+                    qrImg.loadPixels();
+                    
+                    for (let y = 0; y < size; y++) {
+                        for (let x = 0; x < size; x++) {
+                            const module = qr.isDark(Math.floor(y / cellSize), Math.floor(x / cellSize));
+                            const index = (y * size + x) * 4;
+                            qrImg.pixels[index] = module ? dr : 255;
+                            qrImg.pixels[index + 1] = module ? dg : 255;
+                            qrImg.pixels[index + 2] = module ? db : 255;
+                            qrImg.pixels[index + 3] = module ?255:0;
+                        }
+                    }
+                    
+                    qrImg.updatePixels();
+                    resolve(qrImg);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+    // Handle the download button click
+    document.getElementById('downloadButton').addEventListener('click', function() {
+      saveCanvas('a4_canvas', 'png');
+    });
+  </script>
+
+
+</body>
+</html>
