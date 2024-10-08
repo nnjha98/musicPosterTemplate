@@ -41,6 +41,14 @@
       border: 1px solid #ddd;
       box-sizing: border-box;
     }
+
+    #colorShower {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%; /* Makes it a circle */
+      border: 1px solid black;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 
@@ -52,7 +60,7 @@
   <script>
     let a4Width = 2480;  // A4 size in pixels at 300 DPI (width)
     let a4Height = 3508; // A4 size in pixels at 300 DPI (height)
-    let margin = 236*0.66;    // 20mm margin in pixels (20mm * 300dpi / 25.4)
+    let margin = 236 * 0.66;    // 20mm margin in pixels (20mm * 300dpi / 25.4)
     let squareX = margin;  // Starting x position (left margin)
     let squareY = margin;
     let squareSize = a4Width - 2 * margin;  // Width of the square considering margins
@@ -75,6 +83,7 @@
     let img;  // Variable to hold the image
     let svg = [];
     let colorThief;
+    let palette;
 
     // Preload the image before setup and draw are called
     function preload() {
@@ -135,7 +144,8 @@
     function draw() {
       // Light grey background for the A4 canvas
       // background(211, 211, 211);  // light grey
-      background(...[218, 123, 14])
+      console.log("pallete: ", palette)
+      background(...[251, 160, 55])
       push();
       drawSquare();
       pop();
@@ -143,6 +153,7 @@
       drawAlbumSongNames();
       drawQrCode()
       drawBottomPart()
+      noLoop()
     }
 
     function drawBottomPart() {
@@ -188,7 +199,7 @@
       // Add text below the image
       let textY = squareY + squareSize + bandNameSize;  // Position text 30px below the image
       textSize(bandNameSize);  // Set text size
-      fill(5,4,4);  // Set text color (black)
+      fill(5, 4, 4);  // Set text color (black)
       textStyle(BOLD);
       text(albumName, squareX, textY);  // Render text
     }
@@ -205,9 +216,8 @@
       }
     }
 
-    function getComplement(r,g,b)
-    {
-      return [255-r,255-g,255-b]
+    function getComplement(r, g, b) {
+      return [255 - r, 255 - g, 255 - b]
     }
 
     function generateQRCode(url, dr = 0, dg = 0, db = 0) {
@@ -309,6 +319,47 @@
     }
 
 
+  </script>
+
+
+
+  <div id="colorShower"></div>
+
+  <label for="red">Red (0-255):</label>
+  <input type="number" id="red" value="0" min="0" max="255"><br>
+
+  <label for="green">Green (0-255):</label>
+  <input type="number" id="green" value="0" min="0" max="255"><br>
+
+  <label for="blue">Blue (0-255):</label>
+  <input type="number" id="blue" value="0" min="0" max="255"><br>
+
+  <script>
+    // Initial RGB values
+    let r = 0, g = 0, b = 0;
+
+    const colorShower = document.getElementById('colorShower');
+    const redInput = document.getElementById('red');
+    const greenInput = document.getElementById('green');
+    const blueInput = document.getElementById('blue');
+
+    // Function to update color
+    function updateColor() {
+      r = parseInt(redInput.value);
+      g = parseInt(greenInput.value);
+      b = parseInt(blueInput.value);
+
+      const rgbString = `rgb(${r}, ${g}, ${b})`;
+      colorShower.style.backgroundColor = rgbString;
+    }
+
+    // Add event listeners to inputs
+    redInput.addEventListener('input', updateColor);
+    greenInput.addEventListener('input', updateColor);
+    blueInput.addEventListener('input', updateColor);
+
+    // Initial color update
+    updateColor();
   </script>
 
 
